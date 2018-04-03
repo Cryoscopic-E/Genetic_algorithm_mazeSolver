@@ -5,12 +5,11 @@ using System.Linq;
 
 public class PopulationManager : MonoBehaviour {
 
-    public static float elapsed = 0f;
-
+    
     public GameObject botPrefab;
     public float trialTime = 5;
     public int populationSize = 10;
-  
+    public float timeElapsed = 0f;
     private List<GameObject> population = new List<GameObject>();
     private int generation = 1;
     GUIStyle guiStyle = new GUIStyle();
@@ -22,7 +21,7 @@ public class PopulationManager : MonoBehaviour {
         guiStyle.normal.textColor = Color.white;
         GUI.BeginGroup(new Rect(10, 10, 250, 150));
         GUI.Label(new Rect(10, 25, 200, 30), "Generation: " + generation, guiStyle);
-        GUI.Label(new Rect(10, 50, 200, 30), string.Format("Time : {0:0.00}", elapsed), guiStyle);
+        GUI.Label(new Rect(10, 50, 200, 30), string.Format("Time : {0:0.00}", timeElapsed), guiStyle);
         GUI.Label(new Rect(10, 75, 200, 30), "Population: " + population.Count, guiStyle);
         GUI.EndGroup();
     }
@@ -45,15 +44,15 @@ public class PopulationManager : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        elapsed += Time.deltaTime;
-        if (elapsed >= trialTime)
+        timeElapsed += Time.deltaTime;
+        if (timeElapsed >= trialTime)
         {
-            BreedNewPopulation();
-            elapsed = 0;
+            ProduceNewPopulation();
+            timeElapsed = 0;
         }
     }
 
-    GameObject Breed(GameObject p1, GameObject p2)
+    GameObject ProduceBot(GameObject p1, GameObject p2)
     {
         Vector3 startPosition = new Vector3(transform.position.x + Random.Range(-0.5f, 0.5f),
                                                 transform.position.y,
@@ -72,28 +71,34 @@ public class PopulationManager : MonoBehaviour {
         }
         return clone;
     }
-
-    void BreedNewPopulation()
+    //TODO tweak this fitness functionfor better seleting the winners
+    void ProduceNewPopulation()
     {
 
+        //Select the winners (the bot who reach the goal)
+        List<GameObject> winners = new List<GameObject>();
 
-        //List<GameObject> winners = new List<GameObject>();
+        for (int i = 0; i < population.Count; i++)
+        {
+            if (population[i].GetComponent<Brain>().goalReached)
+            {
+                winners.Add(population[i]);
+                population.RemoveAt(i);
+            }
+        }
 
-        //for (int i = 0; i < population.Count; i++)
-        //{
-        //    if (population[i].GetComponent<Brain>().goalReached)
-        //    {
-        //        winners.Add(population[i]);
-        //    }
-        //}
-
-        List<GameObject> sortedPopulation = population.OrderBy(o => o.GetComponent<Brain>().goalReached).ToList();
+        //sort the population base on the walked distance
+        List<GameObject> sortedPopulation = population.OrderBy(o => o.GetComponent<Brain>().distanceWalked).ToList();
         population.Clear();
-        
+
+        //add the winners to the end of the list so they will be included in the fitness selecion
+        sortedPopulation.AddRange(winners);
+
+        //select the bots starting from the midlle of the list to the upper half, since is ordered in ascending order
         for (int i = (int)(sortedPopulation.Count / 2f) - 1; i < sortedPopulation.Count - 1; i++)
         {
-            population.Add(Breed(sortedPopulation[i], sortedPopulation[i + 1]));
-            population.Add(Breed(sortedPopulation[i + 1], sortedPopulation[i]));
+            population.Add(ProduceBot(sortedPopulation[i], sortedPopulation[i + 1]));
+            population.Add(ProduceBot(sortedPopulation[i + 1], sortedPopulation[i]));
         }
 
         for (int i = 0; i < sortedPopulation.Count; i++)

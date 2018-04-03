@@ -8,25 +8,24 @@ public class Brain : MonoBehaviour {
     //1 turn left
     //2 turn right
 
-    //Bot has to make 2 choiches whether is colliding with a wall or not
+    //Bot has to make 1 choiche: when is colliding with a wall turn by an angle
     public int chromosomeLength = 1;
 
-    //Reference to the eye game object where to cast the ray from, for check wall collision
+    //Reference to the eye game object where to cast the spherecast from, for check wall collision
     public Transform eyes;
-
-    public LayerMask wallLayer;
 
     public float speed = 5f;
     
 
-      //TODO hide to inspector
+    //TODO hide to inspector
     public float distanceWalked = 0f;
+    //TODO hide to inspector
+    public bool goalReached;
 
     public Chromosome chromosome;
 
-    private bool hitWall;
 
-    public bool goalReached;
+    private bool hitWall;
 
     private Vector3 startPoint;
 
@@ -73,7 +72,7 @@ public class Brain : MonoBehaviour {
         if (other.CompareTag("goal"))
         {
             goalReached = true;
-            Debug.Log("GOAL REACHED!");
+            //Debug.Log("GOAL REACHED!");
         }
     }
 }
