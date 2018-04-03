@@ -210,8 +210,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chromosomeLength: 1
   eyes: {fileID: 4757880392873052}
-  wallLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  speed: 1
+  speed: 2
   distanceWalked: 0
+  goalReached: 0

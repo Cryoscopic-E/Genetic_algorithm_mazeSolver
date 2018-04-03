@@ -10,6 +10,15 @@ public class PopulationManager : MonoBehaviour {
     public float trialTime = 5;
     public int populationSize = 10;
     public float timeElapsed = 0f;
+
+    //How much randomness of genes when generation new population
+    [Range(0, 99)]
+    public int mutationRate = 1;
+
+    //How much the fitness function need to be selective, a low value will select all the previus generation, a high value will select the winner most of the time
+    [Range(0, 100)]
+    public int selectionRate = 50;
+
     private List<GameObject> population = new List<GameObject>();
     private int generation = 1;
     GUIStyle guiStyle = new GUIStyle();
@@ -61,7 +70,7 @@ public class PopulationManager : MonoBehaviour {
         GameObject clone = Instantiate(botPrefab, startPosition, transform.rotation);
         Brain cloneBrain = clone.GetComponent<Brain>();
         cloneBrain.Init(startPosition);
-        if (Random.Range(0, 100) == 1)//1% mutation rate
+        if (Random.Range(0, 100) <= mutationRate)//1% default mutation rate
         {
             cloneBrain.chromosome.Mutate();
         }
@@ -71,35 +80,43 @@ public class PopulationManager : MonoBehaviour {
         }
         return clone;
     }
-    //TODO tweak this fitness functionfor better seleting the winners
+    //TODO tweak this fitness function for better seleting the winners
     void ProduceNewPopulation()
     {
 
-        //Select the winners (the bot who reach the goal)
-        List<GameObject> winners = new List<GameObject>();
-
-        for (int i = 0; i < population.Count; i++)
-        {
-            if (population[i].GetComponent<Brain>().goalReached)
-            {
-                winners.Add(population[i]);
-                population.RemoveAt(i);
-            }
-        }
-
-        //sort the population base on the walked distance
-        List<GameObject> sortedPopulation = population.OrderBy(o => o.GetComponent<Brain>().distanceWalked).ToList();
+        //Select the winners (the bot who reach the goal), they will be at the end of the array
+        List<GameObject> sortedPopulation = population.OrderBy(o => o.GetComponent<Brain>().goalReached).ToList();
         population.Clear();
 
-        //add the winners to the end of the list so they will be included in the fitness selecion
-        sortedPopulation.AddRange(winners);
+        /*NEW SELECTION METHOD*/
+
+        //cut the array based on te selection rate percentage
+        int cutFrom = Mathf.FloorToInt((populationSize * selectionRate) / 100f) - 1;
+        int cutTo = populationSize - cutFrom;
+
+        List<GameObject> cutted = sortedPopulation.GetRange(cutFrom, cutTo);
+        for (int i = 0; i < populationSize; i++)
+        {
+            //Randomly select parents
+            int firstParent = Random.Range(0, cutted.Count);
+            int secondParent = Random.Range(0, cutted.Count);
+
+            //exclude itself
+            while(secondParent == firstParent)
+            {
+                secondParent = Random.Range(0, cutted.Count);
+            }
+
+            population.Add(ProduceBot(cutted[firstParent], cutted[secondParent]));
+        }
+        /*OLD SELECTION METHOD*/
 
         //select the bots starting from the midlle of the list to the upper half, since is ordered in ascending order
-        for (int i = (int)(sortedPopulation.Count / 2f) - 1; i < sortedPopulation.Count - 1; i++)
-        {
-            population.Add(ProduceBot(sortedPopulation[i], sortedPopulation[i + 1]));
-            population.Add(ProduceBot(sortedPopulation[i + 1], sortedPopulation[i]));
-        }
+        //for (int i = (int)(sortedPopulation.Count / 2f) - 1; i < sortedPopulation.Count - 1; i++)
+        //{
+        //    population.Add(ProduceBot(sortedPopulation[i], sortedPopulation[i + 1]));
+        //    population.Add(ProduceBot(sortedPopulation[i + 1], sortedPopulation[i]));
+        //}
 
         for (int i = 0; i < sortedPopulation.Count; i++)
         {
@@ -107,5 +124,5 @@ public class PopulationManager : MonoBehaviour {
         }
         generation++;
     }
-    
+
 }

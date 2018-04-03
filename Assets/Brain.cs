@@ -29,10 +29,11 @@ public class Brain : MonoBehaviour {
 
     private Vector3 startPoint;
 
-
+    //Initialize the brain by creating new chromosome and set the starting rotation
     public void Init(Vector3 startPosition)
     {
         chromosome = new Chromosome(chromosomeLength, 360);
+        transform.Rotate(0f, chromosome.GetGene(0), 0f);
         goalReached = false;
         distanceWalked = 0f;
         startPoint = startPosition;

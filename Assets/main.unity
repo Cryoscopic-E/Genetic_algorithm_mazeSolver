@@ -311,6 +311,7 @@ MonoBehaviour:
   botPrefab: {fileID: 1790618881257320, guid: 12a1fb1060705b84199be002705c2c04, type: 2}
   trialTime: 30
   populationSize: 50
+  timeElapsed: 0
 --- !u!4 &126051150
 Transform:
   m_ObjectHideFlags: 0

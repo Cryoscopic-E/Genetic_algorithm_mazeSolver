@@ -34,7 +34,7 @@ public class Chromosome {
     {
         for (int i = 0; i < genes.Count; i++)
         {
-            if(i < (genes.Count / 2.0))
+            if(Random.Range(0f,1f) < 0.5f)
             {
                 genes[i] = parent1.genes[i];
             }
